@@ -27,12 +27,15 @@ let categorias = JSON.parse(localStorage.getItem("categorias")) || [
   "Outros"
 ];
 
-let acessos = JSON.parse(localStorage.getItem("acessos")) || JSON.parse(localStorage.getItem("servidores")) || [];
+let acessos =
+  JSON.parse(localStorage.getItem("acessos")) ||
+  JSON.parse(localStorage.getItem("servidores")) ||
+  [];
 
-let categoriasAbertas = JSON.parse(localStorage.getItem("categoriasAbertas")) || {};
+let categoriasAbertas =
+  JSON.parse(localStorage.getItem("categoriasAbertas")) || {};
 
 let editandoIndex = null;
-let arrastandoIndex = null;
 
 acessos = acessos.map(item => ({
   categoria: item.categoria || "IPTV",
@@ -68,6 +71,10 @@ function corrigirUrl(url) {
   return url;
 }
 
+function limparTexto(texto) {
+  return String(texto).replace(/'/g, "\\'");
+}
+
 function alternarCategoria(categoria) {
   categoriasAbertas[categoria] = !categoriasAbertas[categoria];
   salvarTudo();
@@ -78,41 +85,26 @@ function renderCategorias() {
   categoriasContainer.innerHTML = "";
 
   categorias.forEach(categoria => {
-    const aberta = categoriasAbertas[categoria];
+    const aberta = categoriasAbertas[categoria] !== false;
     const acessosDaCategoria = acessos.filter(item => item.categoria === categoria);
 
     const box = document.createElement("section");
     box.className = "categoria-box";
 
-    box.ondragover = (e) => {
-      e.preventDefault();
-      box.classList.add("drop-hover");
-    };
-
-    box.ondragleave = () => {
-      box.classList.remove("drop-hover");
-    };
-
-    box.ondrop = () => {
-      box.classList.remove("drop-hover");
-
-      if (arrastandoIndex !== null) {
-        acessos[arrastandoIndex].categoria = categoria;
-        salvarTudo();
-        renderCategorias();
-      }
-    };
-
     box.innerHTML = `
       <div class="categoria-header">
-        <button class="btn-seta" onclick="alternarCategoria('${categoria}')">
+        <button class="btn-seta" onclick="alternarCategoria('${limparTexto(categoria)}')">
           ${aberta ? "▼" : "▶"}
         </button>
 
         <h2>📁 ${categoria}</h2>
 
-        <button class="btn-acesso" onclick="abrirModalAcesso(null, '${categoria}')">
+        <button class="btn-acesso" onclick="abrirModalAcesso(null, '${limparTexto(categoria)}')">
           + Acesso
+        </button>
+
+        <button class="btn-del-cat" onclick="deletarCategoria('${limparTexto(categoria)}')">
+          Excluir
         </button>
       </div>
 
@@ -135,17 +127,6 @@ function renderCategorias() {
 
       const card = document.createElement("div");
       card.className = "card";
-      card.draggable = true;
-
-      card.ondragstart = () => {
-        arrastandoIndex = indexReal;
-        card.classList.add("arrastando");
-      };
-
-      card.ondragend = () => {
-        arrastandoIndex = null;
-        card.classList.remove("arrastando");
-      };
 
       card.innerHTML = `
         <h3>${item.nome}</h3>
@@ -155,6 +136,7 @@ function renderCategorias() {
         <div class="actions">
           <a class="abrir" href="${corrigirUrl(item.url)}" target="_blank">Abrir</a>
           <button class="editar" onclick="abrirModalAcesso(${indexReal})">Editar</button>
+          <button class="mover" onclick="moverAcesso(${indexReal})">Mover</button>
           <button class="excluir" onclick="excluirAcesso(${indexReal})">Excluir</button>
         </div>
       `;
@@ -210,6 +192,63 @@ function excluirAcesso(index) {
   renderCategorias();
 }
 
+function moverAcesso(index) {
+  let texto = "Digite o número da categoria para mover:\n\n";
+
+  categorias.forEach((cat, i) => {
+    texto += `${i + 1} - ${cat}\n`;
+  });
+
+  const escolha = prompt(texto);
+
+  if (!escolha) return;
+
+  const numero = parseInt(escolha);
+
+  if (isNaN(numero) || numero < 1 || numero > categorias.length) {
+    alert("Categoria inválida.");
+    return;
+  }
+
+  const novaCategoria = categorias[numero - 1];
+
+  acessos[index].categoria = novaCategoria;
+  categoriasAbertas[novaCategoria] = true;
+
+  salvarTudo();
+  renderCategorias();
+}
+
+function deletarCategoria(categoria) {
+  const temAcessos = acessos.some(item => item.categoria === categoria);
+
+  if (temAcessos) {
+    const mover = confirm(
+      `A categoria "${categoria}" possui acessos.\n\nDeseja mover esses acessos para "Outros" antes de excluir?`
+    );
+
+    if (!mover) return;
+
+    if (!categorias.includes("Outros")) {
+      categorias.push("Outros");
+      categoriasAbertas["Outros"] = true;
+    }
+
+    acessos = acessos.map(item => {
+      if (item.categoria === categoria) {
+        return { ...item, categoria: "Outros" };
+      }
+      return item;
+    });
+  }
+
+  categorias = categorias.filter(cat => cat !== categoria);
+  delete categoriasAbertas[categoria];
+
+  salvarTudo();
+  renderCategorias();
+}
+
 btnSalvarAcesso.onclick = () => {
   const categoria = campoCategoriaAcesso.value.trim();
   const nome = campoNome.value.trim();
@@ -221,7 +260,12 @@ btnSalvarAcesso.onclick = () => {
     return;
   }
 
-  const dados = { categoria, nome, descricao, url };
+  const dados = {
+    categoria,
+    nome,
+    descricao,
+    url
+  };
 
   if (editandoIndex === null) {
     acessos.push(dados);
