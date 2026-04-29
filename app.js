@@ -1,120 +1,57 @@
-const lista = document.getElementById("lista");
-const tabs = document.getElementById("tabs");
-const modal = document.getElementById("modal");
+const categoriasContainer = document.getElementById("categoriasContainer");
 
-const btnAdd = document.getElementById("btnAdd");
-const btnSalvar = document.getElementById("salvar");
-const btnCancelar = document.getElementById("cancelar");
+const modalAcesso = document.getElementById("modalAcesso");
+const modalCategoria = document.getElementById("modalCategoria");
 
-const modalTitulo = document.getElementById("modalTitulo");
-const campoCategoria = document.getElementById("categoria");
+const btnNovaCategoria = document.getElementById("btnNovaCategoria");
+
+const tituloModalAcesso = document.getElementById("tituloModalAcesso");
+const campoCategoriaAcesso = document.getElementById("categoriaAcesso");
 const campoNome = document.getElementById("nome");
 const campoDescricao = document.getElementById("descricao");
 const campoUrl = document.getElementById("url");
 
-let categoriaAtual = "Todos";
-let editandoIndex = null;
+const btnSalvarAcesso = document.getElementById("salvarAcesso");
+const btnCancelarAcesso = document.getElementById("cancelarAcesso");
 
-let acessos = JSON.parse(localStorage.getItem("acessos")) || [
-  {
-    categoria: "IPTV",
-    nome: "Login P2SPEED",
-    descricao: "Servidor IPTV",
-    url: "https://seulink.com"
-  }
+const campoNomeCategoria = document.getElementById("nomeCategoria");
+const btnSalvarCategoria = document.getElementById("salvarCategoria");
+const btnCancelarCategoria = document.getElementById("cancelarCategoria");
+
+let categorias = JSON.parse(localStorage.getItem("categorias")) || [
+  "IPTV",
+  "Sites",
+  "Painéis",
+  "Lojas",
+  "Ferramentas",
+  "Outros"
 ];
 
-const categoriasFixas = ["Todos", "IPTV", "Sites", "Lojas", "Painéis", "Outros"];
+let acessos = JSON.parse(localStorage.getItem("acessos")) || JSON.parse(localStorage.getItem("servidores")) || [];
 
-function salvarLocal() {
+let editandoIndex = null;
+
+/* Corrige dados antigos */
+acessos = acessos.map(item => {
+  return {
+    categoria: item.categoria || "IPTV",
+    nome: item.nome || "Sem nome",
+    descricao: item.descricao || "",
+    url: item.url || ""
+  };
+});
+
+acessos.forEach(item => {
+  if (!categorias.includes(item.categoria)) {
+    categorias.push(item.categoria);
+  }
+});
+
+salvarTudo();
+
+function salvarTudo() {
+  localStorage.setItem("categorias", JSON.stringify(categorias));
   localStorage.setItem("acessos", JSON.stringify(acessos));
-}
-
-function abrirModal(index = null) {
-  editandoIndex = index;
-
-  if (index === null) {
-    modalTitulo.innerText = "Novo acesso";
-    campoCategoria.value = categoriaAtual !== "Todos" ? categoriaAtual : "IPTV";
-    campoNome.value = "";
-    campoDescricao.value = "";
-    campoUrl.value = "";
-  } else {
-    const acesso = acessos[index];
-
-    modalTitulo.innerText = "Editar acesso";
-    campoCategoria.value = acesso.categoria;
-    campoNome.value = acesso.nome;
-    campoDescricao.value = acesso.descricao;
-    campoUrl.value = acesso.url;
-  }
-
-  modal.classList.remove("hidden");
-}
-
-function fecharModal() {
-  modal.classList.add("hidden");
-}
-
-function renderTabs() {
-  tabs.innerHTML = "";
-
-  categoriasFixas.forEach(cat => {
-    const btn = document.createElement("button");
-    btn.className = "tab";
-
-    if (cat === categoriaAtual) {
-      btn.classList.add("active");
-    }
-
-    btn.innerText = cat;
-
-    btn.onclick = () => {
-      categoriaAtual = cat;
-      renderTabs();
-      renderLista();
-    };
-
-    tabs.appendChild(btn);
-  });
-}
-
-function renderLista() {
-  lista.innerHTML = "";
-
-  const filtrados = categoriaAtual === "Todos"
-    ? acessos
-    : acessos.filter(item => item.categoria === categoriaAtual);
-
-  if (filtrados.length === 0) {
-    lista.innerHTML = `<p class="vazio">Nenhum acesso nessa categoria.</p>`;
-    return;
-  }
-
-  filtrados.forEach((item) => {
-    const indexReal = acessos.indexOf(item);
-
-    const card = document.createElement("div");
-    card.className = "card";
-
-    card.innerHTML = `
-      <div class="card-top">
-        <div>
-          <h2>${item.nome}</h2>
-          <p>${item.descricao || "Sem descrição"}</p>
-          <span class="categoriaTag">${item.categoria}</span>
-        </div>
-      </div>
-
-      <div class="actions">
-        <a class="abrir" href="${corrigirUrl(item.url)}" target="_blank">Abrir</a>
-        <button class="editar" onclick="abrirModal(${indexReal})">Editar</button>
-        <button class="excluir" onclick="excluirAcesso(${indexReal})">Excluir</button>
-      </div>
-    `;
-
-    lista.appendChild(card);
-  });
 }
 
 function corrigirUrl(url) {
@@ -125,22 +62,106 @@ function corrigirUrl(url) {
   return url;
 }
 
+function renderCategorias() {
+  categoriasContainer.innerHTML = "";
+
+  categorias.forEach(categoria => {
+    const box = document.createElement("section");
+    box.className = "categoria-box";
+
+    const acessosDaCategoria = acessos.filter(item => item.categoria === categoria);
+
+    box.innerHTML = `
+      <div class="categoria-header">
+        <h2>📁 ${categoria}</h2>
+        <button onclick="abrirModalAcesso(null, '${categoria}')">+ Acesso</button>
+      </div>
+
+      <div class="lista-acessos" id="lista-${categoria.replaceAll(" ", "-")}"></div>
+    `;
+
+    categoriasContainer.appendChild(box);
+
+    const lista = box.querySelector(".lista-acessos");
+
+    if (acessosDaCategoria.length === 0) {
+      lista.innerHTML = `<div class="vazio">Nenhum acesso nesta categoria.</div>`;
+      return;
+    }
+
+    acessosDaCategoria.forEach(item => {
+      const indexReal = acessos.indexOf(item);
+
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <h3>${item.nome}</h3>
+        <p>${item.descricao || "Sem descrição"}</p>
+        <small>${item.url}</small>
+
+        <div class="actions">
+          <a class="abrir" href="${corrigirUrl(item.url)}" target="_blank">Abrir</a>
+          <button class="editar" onclick="abrirModalAcesso(${indexReal})">Editar</button>
+          <button class="excluir" onclick="excluirAcesso(${indexReal})">Excluir</button>
+        </div>
+      `;
+
+      lista.appendChild(card);
+    });
+  });
+}
+
+function atualizarSelectCategorias() {
+  campoCategoriaAcesso.innerHTML = "";
+
+  categorias.forEach(categoria => {
+    const option = document.createElement("option");
+    option.value = categoria;
+    option.innerText = categoria;
+    campoCategoriaAcesso.appendChild(option);
+  });
+}
+
+function abrirModalAcesso(index = null, categoriaPadrao = "IPTV") {
+  editandoIndex = index;
+  atualizarSelectCategorias();
+
+  if (index === null) {
+    tituloModalAcesso.innerText = "Novo acesso";
+    campoCategoriaAcesso.value = categoriaPadrao;
+    campoNome.value = "";
+    campoDescricao.value = "";
+    campoUrl.value = "";
+  } else {
+    const acesso = acessos[index];
+
+    tituloModalAcesso.innerText = "Editar acesso";
+    campoCategoriaAcesso.value = acesso.categoria;
+    campoNome.value = acesso.nome;
+    campoDescricao.value = acesso.descricao;
+    campoUrl.value = acesso.url;
+  }
+
+  modalAcesso.classList.remove("hidden");
+}
+
+function fecharModalAcesso() {
+  modalAcesso.classList.add("hidden");
+}
+
 function excluirAcesso(index) {
   const confirmar = confirm("Deseja excluir este acesso?");
 
   if (!confirmar) return;
 
   acessos.splice(index, 1);
-  salvarLocal();
-  renderLista();
+  salvarTudo();
+  renderCategorias();
 }
 
-btnAdd.onclick = () => abrirModal();
-
-btnCancelar.onclick = () => fecharModal();
-
-btnSalvar.onclick = () => {
-  const categoria = campoCategoria.value.trim();
+btnSalvarAcesso.onclick = () => {
+  const categoria = campoCategoriaAcesso.value.trim();
   const nome = campoNome.value.trim();
   const descricao = campoDescricao.value.trim();
   const url = campoUrl.value.trim();
@@ -163,11 +184,40 @@ btnSalvar.onclick = () => {
     acessos[editandoIndex] = dados;
   }
 
-  salvarLocal();
-  fecharModal();
-  renderTabs();
-  renderLista();
+  salvarTudo();
+  fecharModalAcesso();
+  renderCategorias();
 };
 
-renderTabs();
-renderLista();
+btnCancelarAcesso.onclick = fecharModalAcesso;
+
+btnNovaCategoria.onclick = () => {
+  campoNomeCategoria.value = "";
+  modalCategoria.classList.remove("hidden");
+};
+
+btnSalvarCategoria.onclick = () => {
+  const novaCategoria = campoNomeCategoria.value.trim();
+
+  if (!novaCategoria) {
+    alert("Digite o nome da categoria.");
+    return;
+  }
+
+  if (categorias.includes(novaCategoria)) {
+    alert("Essa categoria já existe.");
+    return;
+  }
+
+  categorias.push(novaCategoria);
+  salvarTudo();
+
+  modalCategoria.classList.add("hidden");
+  renderCategorias();
+};
+
+btnCancelarCategoria.onclick = () => {
+  modalCategoria.classList.add("hidden");
+};
+
+renderCategorias();
