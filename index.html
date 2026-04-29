@@ -7,34 +7,30 @@
 
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#111827">
+  <meta name="theme-color" content="#020617">
 </head>
 <body>
 
 <header>
   <div>
     <h1>Meus Acessos</h1>
-    <p>Servidores, sites e painéis</p>
+    <p>Servidores, sites, painéis e ferramentas</p>
   </div>
-  <button id="btnAdd">+</button>
 </header>
 
-<section class="tabs" id="tabs"></section>
+<section class="top-actions">
+  <button id="btnNovaCategoria">+ Categoria</button>
+</section>
 
-<main id="lista"></main>
+<main id="categoriasContainer"></main>
 
-<div id="modal" class="modal hidden">
+<!-- Modal Acesso -->
+<div id="modalAcesso" class="modal hidden">
   <div class="modal-content">
-    <h2 id="modalTitulo">Novo acesso</h2>
+    <h2 id="tituloModalAcesso">Novo acesso</h2>
 
     <label>Categoria</label>
-    <select id="categoria">
-      <option value="IPTV">IPTV</option>
-      <option value="Sites">Sites</option>
-      <option value="Lojas">Lojas</option>
-      <option value="Painéis">Painéis</option>
-      <option value="Outros">Outros</option>
-    </select>
+    <select id="categoriaAcesso"></select>
 
     <label>Nome</label>
     <input type="text" id="nome" placeholder="Ex: Login P2SPEED">
@@ -45,8 +41,21 @@
     <label>Link</label>
     <input type="text" id="url" placeholder="https://...">
 
-    <button id="salvar" class="btnSalvar">Salvar</button>
-    <button id="cancelar" class="btnCancelar">Cancelar</button>
+    <button id="salvarAcesso" class="btnSalvar">Salvar</button>
+    <button id="cancelarAcesso" class="btnCancelar">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal Categoria -->
+<div id="modalCategoria" class="modal hidden">
+  <div class="modal-content">
+    <h2>Nova categoria</h2>
+
+    <label>Nome da categoria</label>
+    <input type="text" id="nomeCategoria" placeholder="Ex: IPTV, Sites, Bancos, Ferramentas">
+
+    <button id="salvarCategoria" class="btnSalvar">Salvar categoria</button>
+    <button id="cancelarCategoria" class="btnCancelar">Cancelar</button>
   </div>
 </div>
 
