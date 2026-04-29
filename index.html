@@ -1,272 +1,64 @@
-const categoriasContainer = document.getElementById("categoriasContainer");
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus Acessos</title>
 
-const modalAcesso = document.getElementById("modalAcesso");
-const modalCategoria = document.getElementById("modalCategoria");
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#020617">
+</head>
+<body>
 
-const btnNovaCategoria = document.getElementById("btnNovaCategoria");
+<header>
+  <div>
+    <h1>Meus Acessos</h1>
+    <p>Servidores, sites, painéis e ferramentas</p>
+  </div>
+</header>
 
-const tituloModalAcesso = document.getElementById("tituloModalAcesso");
-const campoCategoriaAcesso = document.getElementById("categoriaAcesso");
-const campoNome = document.getElementById("nome");
-const campoDescricao = document.getElementById("descricao");
-const campoUrl = document.getElementById("url");
+<section class="top-actions">
+  <button id="btnNovaCategoria">+ Categoria</button>
+</section>
 
-const btnSalvarAcesso = document.getElementById("salvarAcesso");
-const btnCancelarAcesso = document.getElementById("cancelarAcesso");
+<main id="categoriasContainer"></main>
 
-const campoNomeCategoria = document.getElementById("nomeCategoria");
-const btnSalvarCategoria = document.getElementById("salvarCategoria");
-const btnCancelarCategoria = document.getElementById("cancelarCategoria");
+<!-- Modal Acesso -->
+<div id="modalAcesso" class="modal hidden">
+  <div class="modal-content">
+    <h2 id="tituloModalAcesso">Novo acesso</h2>
 
-let categorias = JSON.parse(localStorage.getItem("categorias")) || [
-  "IPTV",
-  "Sites",
-  "Painéis",
-  "Lojas",
-  "Ferramentas",
-  "Outros"
-];
+    <label>Categoria</label>
+    <select id="categoriaAcesso"></select>
 
-let acessos = JSON.parse(localStorage.getItem("acessos")) || JSON.parse(localStorage.getItem("servidores")) || [];
+    <label>Nome</label>
+    <input type="text" id="nome" placeholder="Ex: Login P2SPEED">
 
-let categoriasAbertas = JSON.parse(localStorage.getItem("categoriasAbertas")) || {};
+    <label>Descrição</label>
+    <input type="text" id="descricao" placeholder="Ex: Painel principal">
 
-let editandoIndex = null;
-let arrastandoIndex = null;
+    <label>Link</label>
+    <input type="text" id="url" placeholder="https://...">
 
-acessos = acessos.map(item => ({
-  categoria: item.categoria || "IPTV",
-  nome: item.nome || "Sem nome",
-  descricao: item.descricao || "",
-  url: item.url || ""
-}));
+    <button id="salvarAcesso" class="btnSalvar">Salvar</button>
+    <button id="cancelarAcesso" class="btnCancelar">Cancelar</button>
+  </div>
+</div>
 
-acessos.forEach(item => {
-  if (!categorias.includes(item.categoria)) {
-    categorias.push(item.categoria);
-  }
-});
+<!-- Modal Categoria -->
+<div id="modalCategoria" class="modal hidden">
+  <div class="modal-content">
+    <h2>Nova categoria</h2>
 
-categorias.forEach(cat => {
-  if (categoriasAbertas[cat] === undefined) {
-    categoriasAbertas[cat] = true;
-  }
-});
+    <label>Nome da categoria</label>
+    <input type="text" id="nomeCategoria" placeholder="Ex: IPTV, Sites, Bancos, Ferramentas">
 
-salvarTudo();
+    <button id="salvarCategoria" class="btnSalvar">Salvar categoria</button>
+    <button id="cancelarCategoria" class="btnCancelar">Cancelar</button>
+  </div>
+</div>
 
-function salvarTudo() {
-  localStorage.setItem("categorias", JSON.stringify(categorias));
-  localStorage.setItem("acessos", JSON.stringify(acessos));
-  localStorage.setItem("categoriasAbertas", JSON.stringify(categoriasAbertas));
-}
-
-function corrigirUrl(url) {
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    return "https://" + url;
-  }
-  return url;
-}
-
-function alternarCategoria(categoria) {
-  categoriasAbertas[categoria] = !categoriasAbertas[categoria];
-  salvarTudo();
-  renderCategorias();
-}
-
-function renderCategorias() {
-  categoriasContainer.innerHTML = "";
-
-  categorias.forEach(categoria => {
-    const aberta = categoriasAbertas[categoria];
-    const acessosDaCategoria = acessos.filter(item => item.categoria === categoria);
-
-    const box = document.createElement("section");
-    box.className = "categoria-box";
-
-    box.ondragover = (e) => {
-      e.preventDefault();
-      box.classList.add("drop-hover");
-    };
-
-    box.ondragleave = () => {
-      box.classList.remove("drop-hover");
-    };
-
-    box.ondrop = () => {
-      box.classList.remove("drop-hover");
-
-      if (arrastandoIndex !== null) {
-        acessos[arrastandoIndex].categoria = categoria;
-        salvarTudo();
-        renderCategorias();
-      }
-    };
-
-    box.innerHTML = `
-      <div class="categoria-header">
-        <button class="btn-seta" onclick="alternarCategoria('${categoria}')">
-          ${aberta ? "▼" : "▶"}
-        </button>
-
-        <h2>📁 ${categoria}</h2>
-
-        <button class="btn-acesso" onclick="abrirModalAcesso(null, '${categoria}')">
-          + Acesso
-        </button>
-      </div>
-
-      <div class="lista-acessos ${aberta ? "" : "fechada"}"></div>
-    `;
-
-    categoriasContainer.appendChild(box);
-
-    const lista = box.querySelector(".lista-acessos");
-
-    if (!aberta) return;
-
-    if (acessosDaCategoria.length === 0) {
-      lista.innerHTML = `<div class="vazio">Nenhum acesso nesta categoria.</div>`;
-      return;
-    }
-
-    acessosDaCategoria.forEach(item => {
-      const indexReal = acessos.indexOf(item);
-
-      const card = document.createElement("div");
-      card.className = "card";
-      card.draggable = true;
-
-      card.ondragstart = () => {
-        arrastandoIndex = indexReal;
-        card.classList.add("arrastando");
-      };
-
-      card.ondragend = () => {
-        arrastandoIndex = null;
-        card.classList.remove("arrastando");
-      };
-
-      card.innerHTML = `
-        <h3>${item.nome}</h3>
-        <p>${item.descricao || "Sem descrição"}</p>
-        <small>${item.url}</small>
-
-        <div class="actions">
-          <a class="abrir" href="${corrigirUrl(item.url)}" target="_blank">Abrir</a>
-          <button class="editar" onclick="abrirModalAcesso(${indexReal})">Editar</button>
-          <button class="excluir" onclick="excluirAcesso(${indexReal})">Excluir</button>
-        </div>
-      `;
-
-      lista.appendChild(card);
-    });
-  });
-}
-
-function atualizarSelectCategorias() {
-  campoCategoriaAcesso.innerHTML = "";
-
-  categorias.forEach(categoria => {
-    const option = document.createElement("option");
-    option.value = categoria;
-    option.innerText = categoria;
-    campoCategoriaAcesso.appendChild(option);
-  });
-}
-
-function abrirModalAcesso(index = null, categoriaPadrao = "IPTV") {
-  editandoIndex = index;
-  atualizarSelectCategorias();
-
-  if (index === null) {
-    tituloModalAcesso.innerText = "Novo acesso";
-    campoCategoriaAcesso.value = categoriaPadrao;
-    campoNome.value = "";
-    campoDescricao.value = "";
-    campoUrl.value = "";
-  } else {
-    const acesso = acessos[index];
-
-    tituloModalAcesso.innerText = "Editar acesso";
-    campoCategoriaAcesso.value = acesso.categoria;
-    campoNome.value = acesso.nome;
-    campoDescricao.value = acesso.descricao;
-    campoUrl.value = acesso.url;
-  }
-
-  modalAcesso.classList.remove("hidden");
-}
-
-function fecharModalAcesso() {
-  modalAcesso.classList.add("hidden");
-}
-
-function excluirAcesso(index) {
-  if (!confirm("Deseja excluir este acesso?")) return;
-
-  acessos.splice(index, 1);
-  salvarTudo();
-  renderCategorias();
-}
-
-btnSalvarAcesso.onclick = () => {
-  const categoria = campoCategoriaAcesso.value.trim();
-  const nome = campoNome.value.trim();
-  const descricao = campoDescricao.value.trim();
-  const url = campoUrl.value.trim();
-
-  if (!nome || !url) {
-    alert("Preencha pelo menos o nome e o link.");
-    return;
-  }
-
-  const dados = { categoria, nome, descricao, url };
-
-  if (editandoIndex === null) {
-    acessos.push(dados);
-  } else {
-    acessos[editandoIndex] = dados;
-  }
-
-  categoriasAbertas[categoria] = true;
-
-  salvarTudo();
-  fecharModalAcesso();
-  renderCategorias();
-};
-
-btnCancelarAcesso.onclick = fecharModalAcesso;
-
-btnNovaCategoria.onclick = () => {
-  campoNomeCategoria.value = "";
-  modalCategoria.classList.remove("hidden");
-};
-
-btnSalvarCategoria.onclick = () => {
-  const novaCategoria = campoNomeCategoria.value.trim();
-
-  if (!novaCategoria) {
-    alert("Digite o nome da categoria.");
-    return;
-  }
-
-  if (categorias.includes(novaCategoria)) {
-    alert("Essa categoria já existe.");
-    return;
-  }
-
-  categorias.push(novaCategoria);
-  categoriasAbertas[novaCategoria] = true;
-
-  salvarTudo();
-
-  modalCategoria.classList.add("hidden");
-  renderCategorias();
-};
-
-btnCancelarCategoria.onclick = () => {
-  modalCategoria.classList.add("hidden");
-};
-
-renderCategorias();
+<script src="app.js"></script>
+</body>
+</html>
