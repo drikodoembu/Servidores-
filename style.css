@@ -5,109 +5,117 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f3f4f6;
-  color: #111827;
+  background: #0f172a;
+  color: #e5e7eb;
 }
 
 header {
-  background: #111827;
+  background: #020617;
   color: white;
-  padding: 20px 16px;
+  padding: 22px 16px;
   border-radius: 0 0 24px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 header h1 {
   margin: 0;
-  font-size: 25px;
+  font-size: 26px;
 }
 
 header p {
-  margin: 5px 0 0;
+  margin: 6px 0 0;
   font-size: 13px;
-  color: #d1d5db;
+  color: #94a3b8;
 }
 
-#btnAdd {
-  background: #22c55e;
-  color: white;
-  border: none;
-  font-size: 30px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.tabs {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
+.top-actions {
   padding: 15px;
 }
 
-.tab {
+.top-actions button {
+  width: 100%;
   border: none;
-  background: white;
-  padding: 10px 16px;
-  border-radius: 999px;
+  background: #22c55e;
+  color: #020617;
+  font-size: 16px;
   font-weight: bold;
-  color: #374151;
-  white-space: nowrap;
+  padding: 14px;
+  border-radius: 14px;
   cursor: pointer;
-}
-
-.tab.active {
-  background: #111827;
-  color: white;
 }
 
 main {
-  padding: 0 15px 20px;
+  padding: 0 15px 25px;
   display: grid;
-  gap: 12px;
+  gap: 18px;
 }
 
-.card {
-  background: white;
-  padding: 15px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+.categoria-box {
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 18px;
+  padding: 14px;
 }
 
-.card-top {
+.categoria-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.categoria-header h2 {
+  margin: 0;
+  font-size: 19px;
+  color: #f8fafc;
+}
+
+.categoria-header button {
+  border: none;
+  background: #2563eb;
+  color: white;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.lista-acessos {
+  display: grid;
   gap: 10px;
 }
 
-.card h2 {
+.card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 14px;
+  border-radius: 15px;
+  box-shadow: 0 5px 14px rgba(0,0,0,0.25);
+}
+
+.card h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
+  color: #f8fafc;
 }
 
 .card p {
-  margin: 6px 0;
-  color: #6b7280;
+  margin: 6px 0 0;
+  color: #94a3b8;
   font-size: 14px;
 }
 
-.categoriaTag {
-  display: inline-block;
-  background: #e5e7eb;
-  color: #374151;
-  padding: 4px 9px;
-  border-radius: 999px;
-  font-size: 12px;
-  margin-top: 5px;
+.card small {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  word-break: break-all;
 }
 
 .actions {
   display: flex;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: 13px;
 }
 
 .actions a,
@@ -120,16 +128,17 @@ main {
   text-decoration: none;
   font-weight: bold;
   cursor: pointer;
+  font-size: 14px;
 }
 
 .abrir {
-  background: #2563eb;
-  color: white;
+  background: #22c55e;
+  color: #020617;
 }
 
 .editar {
   background: #f59e0b;
-  color: white;
+  color: #111827;
 }
 
 .excluir {
@@ -138,20 +147,25 @@ main {
 }
 
 .vazio {
+  background: #0f172a;
+  border: 1px dashed #334155;
+  color: #64748b;
   text-align: center;
-  color: #6b7280;
-  margin-top: 40px;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 14px;
 }
 
 /* Modal */
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,0.65);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 15px;
+  z-index: 99;
 }
 
 .hidden {
@@ -159,11 +173,13 @@ main {
 }
 
 .modal-content {
-  background: white;
+  background: #1e293b;
+  color: #e5e7eb;
   width: 100%;
-  max-width: 420px;
+  max-width: 430px;
   padding: 20px;
   border-radius: 18px;
+  border: 1px solid #334155;
 }
 
 .modal-content h2 {
@@ -172,7 +188,7 @@ main {
 
 .modal-content label {
   display: block;
-  margin-top: 10px;
+  margin-top: 11px;
   margin-bottom: 5px;
   font-weight: bold;
   font-size: 14px;
@@ -182,7 +198,9 @@ main {
 .modal-content select {
   width: 100%;
   padding: 12px;
-  border: 1px solid #d1d5db;
+  background: #0f172a;
+  color: white;
+  border: 1px solid #334155;
   border-radius: 10px;
   font-size: 15px;
 }
@@ -190,11 +208,11 @@ main {
 .btnSalvar {
   width: 100%;
   margin-top: 15px;
-  padding: 12px;
+  padding: 13px;
   border: none;
   border-radius: 10px;
   background: #22c55e;
-  color: white;
+  color: #020617;
   font-weight: bold;
   font-size: 16px;
 }
@@ -202,10 +220,16 @@ main {
 .btnCancelar {
   width: 100%;
   margin-top: 8px;
-  padding: 12px;
+  padding: 13px;
   border: none;
   border-radius: 10px;
-  background: #e5e7eb;
-  color: #111827;
+  background: #334155;
+  color: white;
   font-weight: bold;
+}
+
+@media (min-width: 800px) {
+  main {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
 }
