@@ -29,21 +29,27 @@ let categorias = JSON.parse(localStorage.getItem("categorias")) || [
 
 let acessos = JSON.parse(localStorage.getItem("acessos")) || JSON.parse(localStorage.getItem("servidores")) || [];
 
-let editandoIndex = null;
+let categoriasAbertas = JSON.parse(localStorage.getItem("categoriasAbertas")) || {};
 
-/* Corrige dados antigos */
-acessos = acessos.map(item => {
-  return {
-    categoria: item.categoria || "IPTV",
-    nome: item.nome || "Sem nome",
-    descricao: item.descricao || "",
-    url: item.url || ""
-  };
-});
+let editandoIndex = null;
+let arrastandoIndex = null;
+
+acessos = acessos.map(item => ({
+  categoria: item.categoria || "IPTV",
+  nome: item.nome || "Sem nome",
+  descricao: item.descricao || "",
+  url: item.url || ""
+}));
 
 acessos.forEach(item => {
   if (!categorias.includes(item.categoria)) {
     categorias.push(item.categoria);
+  }
+});
+
+categorias.forEach(cat => {
+  if (categoriasAbertas[cat] === undefined) {
+    categoriasAbertas[cat] = true;
   }
 });
 
@@ -52,37 +58,72 @@ salvarTudo();
 function salvarTudo() {
   localStorage.setItem("categorias", JSON.stringify(categorias));
   localStorage.setItem("acessos", JSON.stringify(acessos));
+  localStorage.setItem("categoriasAbertas", JSON.stringify(categoriasAbertas));
 }
 
 function corrigirUrl(url) {
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
     return "https://" + url;
   }
-
   return url;
+}
+
+function alternarCategoria(categoria) {
+  categoriasAbertas[categoria] = !categoriasAbertas[categoria];
+  salvarTudo();
+  renderCategorias();
 }
 
 function renderCategorias() {
   categoriasContainer.innerHTML = "";
 
   categorias.forEach(categoria => {
+    const aberta = categoriasAbertas[categoria];
+    const acessosDaCategoria = acessos.filter(item => item.categoria === categoria);
+
     const box = document.createElement("section");
     box.className = "categoria-box";
 
-    const acessosDaCategoria = acessos.filter(item => item.categoria === categoria);
+    box.ondragover = (e) => {
+      e.preventDefault();
+      box.classList.add("drop-hover");
+    };
+
+    box.ondragleave = () => {
+      box.classList.remove("drop-hover");
+    };
+
+    box.ondrop = () => {
+      box.classList.remove("drop-hover");
+
+      if (arrastandoIndex !== null) {
+        acessos[arrastandoIndex].categoria = categoria;
+        salvarTudo();
+        renderCategorias();
+      }
+    };
 
     box.innerHTML = `
       <div class="categoria-header">
+        <button class="btn-seta" onclick="alternarCategoria('${categoria}')">
+          ${aberta ? "▼" : "▶"}
+        </button>
+
         <h2>📁 ${categoria}</h2>
-        <button onclick="abrirModalAcesso(null, '${categoria}')">+ Acesso</button>
+
+        <button class="btn-acesso" onclick="abrirModalAcesso(null, '${categoria}')">
+          + Acesso
+        </button>
       </div>
 
-      <div class="lista-acessos" id="lista-${categoria.replaceAll(" ", "-")}"></div>
+      <div class="lista-acessos ${aberta ? "" : "fechada"}"></div>
     `;
 
     categoriasContainer.appendChild(box);
 
     const lista = box.querySelector(".lista-acessos");
+
+    if (!aberta) return;
 
     if (acessosDaCategoria.length === 0) {
       lista.innerHTML = `<div class="vazio">Nenhum acesso nesta categoria.</div>`;
@@ -94,6 +135,17 @@ function renderCategorias() {
 
       const card = document.createElement("div");
       card.className = "card";
+      card.draggable = true;
+
+      card.ondragstart = () => {
+        arrastandoIndex = indexReal;
+        card.classList.add("arrastando");
+      };
+
+      card.ondragend = () => {
+        arrastandoIndex = null;
+        card.classList.remove("arrastando");
+      };
 
       card.innerHTML = `
         <h3>${item.nome}</h3>
@@ -151,9 +203,7 @@ function fecharModalAcesso() {
 }
 
 function excluirAcesso(index) {
-  const confirmar = confirm("Deseja excluir este acesso?");
-
-  if (!confirmar) return;
+  if (!confirm("Deseja excluir este acesso?")) return;
 
   acessos.splice(index, 1);
   salvarTudo();
@@ -171,18 +221,15 @@ btnSalvarAcesso.onclick = () => {
     return;
   }
 
-  const dados = {
-    categoria,
-    nome,
-    descricao,
-    url
-  };
+  const dados = { categoria, nome, descricao, url };
 
   if (editandoIndex === null) {
     acessos.push(dados);
   } else {
     acessos[editandoIndex] = dados;
   }
+
+  categoriasAbertas[categoria] = true;
 
   salvarTudo();
   fecharModalAcesso();
@@ -210,6 +257,8 @@ btnSalvarCategoria.onclick = () => {
   }
 
   categorias.push(novaCategoria);
+  categoriasAbertas[novaCategoria] = true;
+
   salvarTudo();
 
   modalCategoria.classList.add("hidden");
