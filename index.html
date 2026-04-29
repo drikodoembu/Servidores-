@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus Servidores</title>
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111827">
+</head>
+
+<body>
+
+<header>
+  <h1>Servidores</h1>
+  <button id="btnAdd">+</button>
+</header>
+
+<main id="lista"></main>
+
+<!-- Modal -->
+<div id="modal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Novo Servidor</h2>
+
+    <input type="text" id="nome" placeholder="Nome">
+    <input type="text" id="descricao" placeholder="Descrição">
+    <input type="text" id="url" placeholder="https://...">
+
+    <button id="salvar">Salvar</button>
+    <button id="cancelar">Cancelar</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
