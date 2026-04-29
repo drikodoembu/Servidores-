@@ -3,33 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meus Servidores</title>
+  <title>Meus Acessos</title>
 
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#111827">
 </head>
-
 <body>
 
 <header>
-  <h1>Servidores</h1>
+  <div>
+    <h1>Meus Acessos</h1>
+    <p>Servidores, sites e painéis</p>
+  </div>
   <button id="btnAdd">+</button>
 </header>
 
+<section class="tabs" id="tabs"></section>
+
 <main id="lista"></main>
 
-<!-- Modal -->
 <div id="modal" class="modal hidden">
   <div class="modal-content">
-    <h2>Novo Servidor</h2>
+    <h2 id="modalTitulo">Novo acesso</h2>
 
-    <input type="text" id="nome" placeholder="Nome">
-    <input type="text" id="descricao" placeholder="Descrição">
+    <label>Categoria</label>
+    <select id="categoria">
+      <option value="IPTV">IPTV</option>
+      <option value="Sites">Sites</option>
+      <option value="Lojas">Lojas</option>
+      <option value="Painéis">Painéis</option>
+      <option value="Outros">Outros</option>
+    </select>
+
+    <label>Nome</label>
+    <input type="text" id="nome" placeholder="Ex: Login P2SPEED">
+
+    <label>Descrição</label>
+    <input type="text" id="descricao" placeholder="Ex: Painel principal">
+
+    <label>Link</label>
     <input type="text" id="url" placeholder="https://...">
 
-    <button id="salvar">Salvar</button>
-    <button id="cancelar">Cancelar</button>
+    <button id="salvar" class="btnSalvar">Salvar</button>
+    <button id="cancelar" class="btnCancelar">Cancelar</button>
   </div>
 </div>
 
