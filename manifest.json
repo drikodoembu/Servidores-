@@ -1,6 +1,6 @@
 {
-  "name": "Servidores IPTV",
-  "short_name": "Servidores",
+  "name": "Meus Acessos",
+  "short_name": "Acessos",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f3f4f6",
